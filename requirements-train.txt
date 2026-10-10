@@ -1,0 +1,11 @@
+# Training + evaluation (CUDA GPU, e.g. Kaggle T4 x2). Install unsloth first; it pins compatible torch/transformers/trl.
+unsloth
+trl
+datasets
+bitsandbytes
+peft
+accelerate
+pyyaml
+matplotlib
+pytest
+openai   # only if you use an API judge (judge.backend: openai)

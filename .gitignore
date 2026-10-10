@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+outputs/
+data/
+socratic_model/unsloth_compiled_cache/
+socratic_model/huggingface_tokenizers_cache/
+socratic_model/socratic-qwen-checkpoints/
+*.log
+!results/
+legacy_v1/*.tgz

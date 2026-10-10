@@ -1,0 +1,7 @@
+# Inference / Streamlit demo (Mac MPS, CUDA or CPU)
+streamlit>=1.40
+transformers>=4.56
+peft>=0.17
+torch>=2.3
+accelerate
+pyyaml

@@ -1,0 +1,24 @@
+# Main run: QLoRA SFT on Socratic-curated MathDial turns (completion-only loss).
+output_dir: outputs/sft_socratic
+model_name: unsloth/Qwen2.5-1.5B-Instruct-bnb-4bit
+max_seq_length: 1536
+train_file: data/sft_socratic_train.jsonl
+val_file: data/sft_socratic_val.jsonl
+completion_only_loss: true
+save_merged: true            # merged 16-bit copy is the starting point for the optional DPO stage
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.0
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+train:
+  epochs: 2
+  lr: 2.0e-4
+  batch_size: 4
+  grad_accum: 8              # effective batch 32 (fits a 16 GB T4)
+  warmup_ratio: 0.03
+  scheduler: cosine
+  weight_decay: 0.01
+  logging_steps: 10
+  eval_steps: 50
+  seed: 3407

@@ -1,0 +1,6 @@
+streamlit 
+transformers 
+peft 
+torch 
+accelerate
+torchvision

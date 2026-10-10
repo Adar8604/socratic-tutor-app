@@ -1,0 +1,50 @@
+eval_items: data/eval_items.jsonl
+output_dir: outputs/eval
+train_root: outputs
+n_items: 400
+pairwise_reference: base_zeroshot
+
+generation:
+  max_new_tokens: 160
+  temperature: 0.7
+  top_p: 0.9
+  batch_size: 16
+  seed: 1234
+  solver_max_new_tokens: 384
+  guard_max_resamples: 3
+
+# Every system that exists on disk is evaluated; missing adapters are skipped automatically.
+systems:
+  base_zeroshot:      {base: Qwen/Qwen2.5-1.5B-Instruct, prompt: zeroshot}
+  base_fewshot:       {base: Qwen/Qwen2.5-1.5B-Instruct, prompt: fewshot}
+  sft_raw:            {base: Qwen/Qwen2.5-1.5B-Instruct, adapter: outputs/sft_raw/adapter}
+  sft_full_loss:      {base: Qwen/Qwen2.5-1.5B-Instruct, adapter: outputs/sft_full_loss/adapter}
+  sft_socratic:       {base: Qwen/Qwen2.5-1.5B-Instruct, adapter: outputs/sft_socratic/adapter}
+  sft_socratic_guard: {base: Qwen/Qwen2.5-1.5B-Instruct, adapter: outputs/sft_socratic/adapter, guard: true}
+  dpo:                {base: outputs/sft_socratic/merged, adapter: outputs/dpo/adapter}
+  qwen7b_zeroshot:    {base: Qwen/Qwen2.5-7B-Instruct, load_in_4bit: true, prompt: zeroshot}
+
+judge:
+  backend: hf                       # hf | openai  (openai = any OpenAI-compatible API; set JUDGE_API_KEY/JUDGE_BASE_URL)
+  model: Qwen/Qwen2.5-7B-Instruct   # NOTE: same family as the tutor -> self-preference risk; an external judge is better if you have one
+  load_in_4bit: true
+  batch_size: 8
+  max_new_tokens: 120
+
+simulation:
+  n_dialogues: 150
+  max_tutor_turns: 6
+  student_model: Qwen/Qwen2.5-7B-Instruct
+  student_load_in_4bit: true
+  student_max_new_tokens: 160
+  tutor_systems: [control_recheck, base_zeroshot, sft_socratic, sft_socratic_guard, dpo]
+
+gsm8k:
+  n: 400
+  seed: 0
+  max_new_tokens: 512
+  systems: [base_zeroshot, sft_socratic, dpo]
+
+report:
+  primary: sft_socratic
+  guard: sft_socratic_guard

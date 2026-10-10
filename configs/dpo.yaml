@@ -1,0 +1,27 @@
+# Optional stage 2: DPO on top of the merged SFT model (reference = SFT model).
+output_dir: outputs/dpo
+sft_merged_model: outputs/sft_socratic/merged
+max_seq_length: 1536
+pairs:
+  source_file: data/sft_socratic_train.jsonl
+  out_dir: data/dpo
+  n_contexts: 3000
+  samples_per_context: 2
+  temperature: 1.0
+  lecture_words: 70
+  batch_size: 16
+  seed: 0
+  generators:
+    sft_socratic: {base: Qwen/Qwen2.5-1.5B-Instruct, adapter: outputs/sft_socratic/adapter}
+    base_zeroshot: {base: Qwen/Qwen2.5-1.5B-Instruct}
+lora:
+  r: 16
+  alpha: 32
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+train:
+  beta: 0.1
+  lr: 1.0e-5
+  epochs: 1
+  batch_size: 2
+  grad_accum: 8
+  seed: 3407
