@@ -92,6 +92,15 @@ def train(cfg):
 
     tc, lc = cfg["train"], cfg["lora"]
     out = Path(cfg["output_dir"])
+    merged = Path(cfg["sft_merged_model"])
+    if not (merged / "config.json").exists():  # e.g. merged copy not saved by the SFT run -> rebuild it from the adapter
+        adapter_dir = merged.parent / "adapter"
+        print(f"[dpo] {merged} missing -> merging {adapter_dir} into 16-bit weights")
+        m, t = FastLanguageModel.from_pretrained(model_name=str(adapter_dir), max_seq_length=cfg["max_seq_length"],
+                                                 load_in_4bit=True)
+        m.save_pretrained_merged(str(merged), t, save_method="merged_16bit")
+        del m, t
+        torch.cuda.empty_cache()
     torch.cuda.reset_peak_memory_stats()
     model, tok = FastLanguageModel.from_pretrained(model_name=cfg["sft_merged_model"],
                                                    max_seq_length=cfg["max_seq_length"], load_in_4bit=True)

@@ -12,7 +12,7 @@ log() { echo -e "\n========== $* ==========\n"; }
 
 for s in $STAGES; do case $s in
   data)  log "1/9 data: MathDial -> Socratic SFT data + held-out eval items"
-         python -m socratic_tutor.data --out data --n-eval 400 ;;
+         python -m socratic_tutor.data --source "${MATHDIAL_SOURCE:-eth-nlped/mathdial}" --out data --n-eval 400 ;;
   train) log "2/9 QLoRA SFT (main run, ~2-3 h on T4)"
          [ -f outputs/sft_socratic/train_metrics.json ] || python -m socratic_tutor.train_sft --config configs/sft_socratic.yaml ;;
   ablations)

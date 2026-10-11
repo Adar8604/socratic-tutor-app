@@ -49,7 +49,7 @@ Total effort: ~1 h of your time plus ~12–14 h of unattended Kaggle GPU time (i
 2. Set:
    ```python
    STAGES = "dpo eval judge"
-   RESUME_DIR = "/kaggle/input/<notebook-name>/socratic-tutor-app"   # check the exact path in the Input panel
+   RESUME_DIR = "auto"   # finds the attached previous output automatically
    ```
 3. **Save Version → Save & Run All (Commit)** again.
 4. Check that `outputs/eval/generations/*.jsonl` and `outputs/eval/judge/*.jsonl` exist in the Output tab. The log prints
@@ -58,7 +58,7 @@ Total effort: ~1 h of your time plus ~12–14 h of unattended Kaggle GPU time (i
 ## Phase 3: Kaggle Part 3: simulation + GSM8K + report (≈2–3 h GPU)
 
 1. Remove the Part 1 input and add the **Part 2** version's output instead.
-2. Set `STAGES = "sim gsm8k report"` and point `RESUME_DIR` at the Part 2 output path.
+2. Set `STAGES = "sim gsm8k report"` and keep `RESUME_DIR = "auto"`.
 3. **Save & Run All (Commit)**.
 4. Output tab → download **`socratic_results.zip`** (~100 MB: adapters, metrics, eval outputs, results, figures).
 
