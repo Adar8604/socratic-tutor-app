@@ -6,6 +6,7 @@
 set -euo pipefail
 export PYTHONPATH="$(pwd)/src:${PYTHONPATH:-}"
 export TOKENIZERS_PARALLELISM=false
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 STAGES=${@:-data train ablations dpo eval judge sim gsm8k report}
 NGPU=$(python -c "import torch;print(torch.cuda.device_count())" 2>/dev/null || echo 0)
 log() { echo -e "\n========== $* ==========\n"; }
@@ -33,7 +34,7 @@ for s in $STAGES; do case $s in
   judge) log "6/9 LLM-as-judge (rubric + pairwise + judge validation)"
          CUDA_VISIBLE_DEVICES=0 python -m socratic_tutor.judge --config configs/eval.yaml ;;
   sim)   log "7/9 multi-turn simulated-student evaluation"
-         CUDA_VISIBLE_DEVICES=0 python -m socratic_tutor.simulate --config configs/eval.yaml ;;
+         python -m socratic_tutor.simulate --config configs/eval.yaml ;;   # uses both GPUs (student cuda:0, tutor cuda:1)
   gsm8k) log "8/9 GSM8K capability retention"
          CUDA_VISIBLE_DEVICES=${GSM8K_GPU:-0} python -m socratic_tutor.gsm8k_eval --config configs/eval.yaml ;;
   report) log "9/9 report"

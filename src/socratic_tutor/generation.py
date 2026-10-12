@@ -50,7 +50,8 @@ def load_model(spec: ModelSpec, device: Optional[str] = None):
     from transformers import AutoModelForCausalLM, AutoTokenizer
 
     device = device or pick_device()
-    dtype = torch.float16 if device in ("cuda", "mps") else torch.float32
+    is_cuda = device.startswith("cuda")
+    dtype = torch.float16 if (is_cuda or device == "mps") else torch.float32
     tok_src = spec.adapter if spec.adapter and Path(spec.adapter, "tokenizer_config.json").exists() else spec.base
     tok = AutoTokenizer.from_pretrained(tok_src)
     tok.padding_side = "left"
@@ -58,14 +59,14 @@ def load_model(spec: ModelSpec, device: Optional[str] = None):
         tok.pad_token = tok.eos_token
 
     kwargs = {"low_cpu_mem_usage": True}
-    if spec.load_in_4bit and device == "cuda":
+    if spec.load_in_4bit and is_cuda:
         from transformers import BitsAndBytesConfig
 
         kwargs["quantization_config"] = BitsAndBytesConfig(
             load_in_4bit=True, bnb_4bit_quant_type="nf4", bnb_4bit_compute_dtype=torch.float16,
             bnb_4bit_use_double_quant=True,
         )
-        kwargs["device_map"] = {"": 0}
+        kwargs["device_map"] = {"": int(device.split(":")[1]) if ":" in device else 0}
     else:
         kwargs["dtype"] = dtype
     try:

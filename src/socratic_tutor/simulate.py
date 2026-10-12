@@ -102,6 +102,11 @@ def main():
     args = ap.parse_args()
     cfg = yaml.safe_load(open(args.config))
     scfg, gcfg = cfg["simulation"], cfg["generation"]
+    # dialogues grow every turn -> use a smaller batch than single-turn eval to stay inside a 16 GB T4
+    gcfg = {**gcfg, "batch_size": scfg.get("batch_size", 8)}
+    # with 2 GPUs (Kaggle T4 x2): student on cuda:0, tutor on cuda:1
+    two_gpus = torch.cuda.is_available() and torch.cuda.device_count() > 1
+    student_dev, tutor_dev = ("cuda:0", "cuda:1") if two_gpus else (None, None)
     out_dir = Path(cfg["output_dir"]) / "simulation"
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -113,7 +118,7 @@ def main():
     problems = problems[: scfg["n_dialogues"]]
 
     student = load_model(ModelSpec(name="student", base=scfg["student_model"],
-                                   load_in_4bit=scfg.get("student_load_in_4bit", True)))
+                                   load_in_4bit=scfg.get("student_load_in_4bit", True)), device=student_dev)
     names = scfg["tutor_systems"]
     if args.systems:
         names = [n for n in names if n in set(args.systems.split(","))]
@@ -128,7 +133,7 @@ def main():
             if not spec.available():
                 print(f"[sim] skip {name}: not available")
                 continue
-            tutor = load_model(spec)
+            tutor = load_model(spec, device=tutor_dev)
             rows = run_dialogues(tutor, student, problems, scfg, gcfg, guard=spec.guard)
             del tutor
             gc.collect()

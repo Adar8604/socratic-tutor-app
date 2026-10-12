@@ -37,6 +37,7 @@ simulation:
   student_model: Qwen/Qwen2.5-7B-Instruct
   student_load_in_4bit: true
   student_max_new_tokens: 160
+  batch_size: 8
   tutor_systems: [control_recheck, base_zeroshot, sft_socratic, sft_socratic_guard, dpo]
 
 gsm8k:
